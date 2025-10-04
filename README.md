@@ -1,22 +1,22 @@
 # 🚀 Sistema de Gestão - Narcóticos Anônimos (NA)
 
-Este é o repositório do nosso Projeto Integrador da Unicamp. Estamos construindo um sistema para ajudar um grupo de NA a organizar suas reuniões, eventos e comunicados.
+Este é o repositório do nosso Projeto Integrador da disciplina "Projeto Integrador" na Faculdade de Tecnologia da Universidade Estadual de Campinas (FT/UNICAMP). Estamos construindo um sistema para ajudar um grupo de NA a organizar suas reuniões, eventos e comunicados.
 
 ---
 
 ### 🎯 O Problema que Estamos Resolvendo
 
-[cite_start]A comunicação no grupo atualmente depende de cadernos físicos e WhatsApp[cite: 6, 24]. [cite_start]Isso causa problemas como perda de informações, dificuldade de organização e ruídos na comunicação[cite: 6, 25].
+A comunicação no grupo atualmente depende de cadernos físicos e WhatsApp.Isso causa problemas como perda de informações, dificuldade de organização e ruídos na comunicação.
 
-Nosso objetivo é criar uma plataforma centralizada para acabar com essa bagunça. [cite_start]A ideia é ter um lugar único e confiável para todas as informações importantes, melhorando a comunicação e a eficiência do grupo[cite: 5, 7, 13].
+Nosso objetivo é criar uma plataforma centralizada para acabar com essa bagunça. A ideia é ter um lugar único e confiável para todas as informações importantes, melhorando a comunicação e a eficiência do grupo.
 
 ### ✨ Features Principais
 
-- **📅 Agenda de Reuniões:** Um calendário ou lista para ver todas as reuniões semanais[cite: 98].
-- **🎉 Mural de Eventos:** Uma área para divulgar eventos únicos, como confraternizações e workshops[cite: 100].
-- **📢 Dados da Secretaria:** Acesso rápido e transparente aos dados financeiros do grupo, como a Sétima Tradição[cite: 102].
-- **👀 Acesso Público:** Membros podem consultar tudo sem precisar de login[cite: 47, 49].
--   **🔒 Painel Admin:** Uma área segura para os servidores de confiança gerenciarem as informações[cite: 104].
+- **📅 Agenda de Reuniões:** Um calendário ou lista para ver todas as reuniões semanais.
+- **🎉 Mural de Eventos:** Uma área para divulgar eventos únicos, como confraternizações e workshops.
+- **📢 Dados da Secretaria:** Acesso rápido e transparente aos dados financeiros do grupo, como a Sétima Tradição.
+- **👀 Acesso Público:** Membros podem consultar tudo sem precisar de login.
+- **🔒 Painel Admin:** Uma área segura para os servidores de confiança gerenciarem as informações.
 
 ### 🛠️ Nossa Stack
 
