@@ -1,12 +1,13 @@
 import { Request, Response } from 'express';
 import { PrismaClient } from '@prisma/client';
 import crypto from 'crypto';
+import transporter from '../lib/mailer';
+
 const prisma = new PrismaClient();
 
 class AdminController {
   async create(req: Request, res: Response) {
-    // TODO: Adicionar um middleware de autenticação para garantir que
-    // apenas um administrador logado possa executar esta ação.
+    // TODO: Adicionar um middleware de autenticação
 
     try {
       const { name, email } = req.body;
@@ -17,7 +18,6 @@ class AdminController {
       }
 
       const activationToken = crypto.randomBytes(20).toString('hex');
-
       const now = new Date();
       now.setHours(now.getHours() + 1);
       const tokenExpires = now;
@@ -31,11 +31,20 @@ class AdminController {
         },
       });
 
-      // TODO: Implementar o serviço de envio de e-mail real (Nodemailer)
-      console.log('----------------------------------------------------');
-      console.log(`E-mail de ativação para: ${email}`);
-      console.log(`Token: ${activationToken}`);
-      console.log('----------------------------------------------------');
+      const activationLink = `http://localhost:3000/define-password?token=${activationToken}`; //usando localhost por enquanto
+
+      await transporter.sendMail({
+        from: '"Equipe NA" <noreply@na-sistema.com>',
+        to: email,
+        subject: 'Ative sua conta no Sistema NA',
+        html: `
+          <p>Olá, ${name}!</p>
+          <p>Você foi convidado para ser um administrador do sistema do grupo de NA.</p>
+          <p>Por favor, clique no link abaixo para definir sua senha e ativar sua conta:</p>
+          <a href="${activationLink}">${activationLink}</a>
+          <p>Este link expira em 1 hora.</p>
+        `,
+      });
 
       return res.status(201).json({
         message:
