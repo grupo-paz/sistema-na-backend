@@ -1,0 +1,30 @@
+{
+  "compilerOptions": {
+    /* Base Options */
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "target": "ES2022",
+    "allowJs": true,
+    "resolveJsonModule": true,
+    "moduleDetection": "force",
+    "isolatedModules": true,
+
+    /* Strictness */
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "forceConsistentCasingInFileNames": true,
+
+    /* Module Options */
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+
+    /* Path and Output */
+    "rootDir": "src",
+    "outDir": "dist",
+
+    /* Library options */
+    "lib": ["ESNext"]
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules"]
+}
