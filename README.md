@@ -50,10 +50,7 @@ Bora configurar o ambiente de desenvolvimento.
 
 3.  **Configure o `.env`:**
     * Copie o `.env.example` para um novo arquivo `.env`.
-    * Preencha a `DATABASE_URL` com seus dados do Postgres.
-        ```env
-        DATABASE_URL="postgresql://seu_usuario:sua_senha@localhost:5432/na_api"
-        ```
+    * Crie o .env e configure de acordo com o `.env.example`
 
 4.  **Prepare o Banco de Dados:**
     * Este comando cria as tabelas para você.
