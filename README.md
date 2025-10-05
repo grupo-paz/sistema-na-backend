@@ -24,52 +24,81 @@ Nosso objetivo é criar uma plataforma centralizada para acabar com essa bagunç
 | --------- | ------------------------------------------------------       |
 | **Backend** | Node.js, TypeScript, Express, Prisma, PostgreSQL, JWT, Zod |
                                       
-
 ### 🚀 Rodando o Backend Localmente
 
-Bora configurar o ambiente de desenvolvimento.
+Guia para configurar e rodar o ambiente de desenvolvimento do backend.
 
 **Você vai precisar de:**
 * Node.js (v18+)
 * NPM ou Yarn
 * Git
 * PostgreSQL
+* Uma conta gratuita no **[Mailtrap.io](https://mailtrap.io/)** (para testar os e-mails)
 
 **Passo a passo:**
-1.  **Clone o repo:**
-    ```bash
-    git clone <URL_DO_SEU_REPOSITORIO_GITLAB>
-    cd nome-do-repositorio
-    ```
 
-2.  **Instale as dependências:**
+1.  **Clone o repositório e instale as dependências:**
     ```bash
-    cd backend
+    git clone <URL_DO_REPOSITORIO_BACKEND>
+    cd na-sistema
     npm install
     ```
 
-3.  **Configure o `.env`:**
-    * Copie o `.env.example` para um novo arquivo `.env`.
-    * Crie o .env e configure de acordo com o `.env.example`
+2.  **Configure o Banco de Dados (PostgreSQL):**
+    * Abra o `psql` ou a sua ferramenta de gestão de base de dados.
+    * Execute os seguintes comandos SQL para criar o utilizador e o banco de dados para este projeto:
 
-4.  **Prepare o Banco de Dados:**
-    * Este comando cria as tabelas para você.
-        ```bash
-        npx prisma migrate dev
+    ```sql
+    -- Cria um utilizador (role) para a aplicação
+    CREATE USER usuario_projeto WITH PASSWORD 'senha_projeto';
+
+    -- Cria o banco de dados
+    CREATE DATABASE na_api;
+
+    -- Dá todas as permissões do banco para o novo utilizador
+    GRANT ALL PRIVILEGES ON DATABASE na_api TO usuario_projeto;
+
+    -- Permite que o novo utilizador crie outros bancos (necessário para o Prisma)
+    ALTER USER usuario_projeto CREATEDB;
+    ```
+
+3.  **Configure as Variáveis de Ambiente (`.env`):**
+    * Na pasta `na-sistema/backend`, copie o ficheiro `.env.example` para um novo ficheiro chamado `.env`.
+    * Preencha-o com os seus dados. Ele deve ficar parecido com isto:
+        ```env
+        DATABASE_URL="postgresql://usuario_projeto:senha_projeto@localhost:5432/na_api"
+        FRONTEND_URL="http://localhost:5173"
+        
+        EMAIL_HOST="sandbox.smtp.mailtrap.io"
+        EMAIL_PORT=2525
+        EMAIL_USER="SEU_USUARIO_MAILTRAP"
+        EMAIL_PASS="SUA_SENHA_MAILTRAP"
+
+        JWT_SECRET="um-segredo-qualquer-bem-longo"
+        API_KEY="chave-secreta-da-api-12345"
         ```
+
+4.  **Prepare o Banco de Dados com o Prisma:**
+    * Estes comandos vão criar as tabelas e popular o banco com o primeiro administrador.
+    ```bash
+    # Aplica as migrações (cria as tabelas)
+    npx prisma migrate dev
+
+    # Popula o banco com o primeiro admin (admin@admin.com / admin123)
+    npx prisma db seed
+    ```
 
 5.  **Suba o servidor:**
-    * Rode o script de desenvolvimento (ele reinicia sozinho quando você salva!).
-        ```bash
-        npm run dev
-        ```
-E pronto! O backend estará rodando em `http://localhost:3333`.
+    ```bash
+    npm run dev
+    ```
+E pronto! O backend estará a rodar em `http://localhost:3333`.
 
 ### 👥 A Equipe
 
 | Papel             | Quem é          |
 | ----------------- | --------------- |
-| Product Owner (PO) | Maria Luiz Sperancin Mancebo |
+| Product Owner (PO) | Maria Luiza Sperancin Mancebo |
 | Scrum Master      | Juliana da Costa Silva |
 | UX Designer       | Julia Dias Luz |
 | Dev Backend ☕    | Ryan Pavini |
