@@ -4,8 +4,15 @@ import authMiddleware from './middlewares/authMiddleware';
 
 const router = Router();
 
-router.post('/auth/register', authMiddleware, AdminController.create);
 router.post('/auth/login', AdminController.login);
 router.post('/admins/define-password', AdminController.definePassword);
+router.post('/auth/register', authMiddleware, AdminController.create);
+
+router.get('/admins', authMiddleware, AdminController.list);
+
+router.put('/admins/:id', authMiddleware, AdminController.update);
+
+router.delete('/admins/:id', authMiddleware, AdminController.delete);
+
 
 export default router;
