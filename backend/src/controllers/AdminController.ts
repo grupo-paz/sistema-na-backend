@@ -16,9 +16,18 @@ const loginSchema = z.object({
   password: z.string().min(1, { message: 'A senha é obrigatória.' }),
 });
 
+const refreshTokenSchema = z.object({
+  refreshToken: z.string().min(1, { message: 'O refresh token é obrigatório.' }),
+});
+
 const definePasswordSchema = z.object({
   token: z.string().min(1, { message: 'O token é obrigatório.' }),
   password: z.string().min(6, { message: 'A senha deve ter no mínimo 6 caracteres.' }),
+});
+
+const changePasswordSchema = z.object({
+  currentPassword: z.string().min(1, { message: 'A senha atual é obrigatória.' }),
+  newPassword: z.string().min(6, { message: 'A nova senha deve ter no mínimo 6 caracteres.' }),
 });
 
 const updateAdminSchema = z.object({
@@ -79,7 +88,7 @@ class AdminController {
       const { email, password } = loginSchema.parse(req.body);
       const admin = await prisma.admin.findUnique({ where: { email } });
 
-      if (!admin || !admin.password) {
+      if (!admin?.password) {
         return res.status(401).json({ error: 'E-mail ou senha inválidos.' });
       }
 
@@ -88,11 +97,18 @@ class AdminController {
         return res.status(401).json({ error: 'E-mail ou senha inválidos.' });
       }
 
-      const token = jwt.sign({ id: admin.id }, jwtSecret, { expiresIn: '8h' });
+      const accessToken = jwt.sign({ id: admin.id }, jwtSecret, { expiresIn: '1h' });
+      const refreshToken = jwt.sign({ id: admin.id }, jwtSecret, { expiresIn: '7d' });
+
       return res.json({
+        admin: {
+          id: admin.id,
+          name: admin.name,
+          email: admin.email,
+        },
         message: 'Login bem-sucedido!',
-        accessToken: token,
-        refreshToken: token,
+        accessToken,
+        refreshToken,
       });
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -150,7 +166,7 @@ class AdminController {
         orderBy: { createdAt: 'desc' },
       });
       return res.json(admins);
-    } catch (error) {
+    } catch {
       return res.status(500).json({ error: 'Ocorreu um erro ao listar os administradores.' });
     }
   }
@@ -203,8 +219,122 @@ class AdminController {
       
       await prisma.admin.delete({ where: { id } });
       return res.status(200).json({ message: 'Administrador excluído com sucesso.' });
-    } catch (error) {
+    } catch {
       return res.status(500).json({ error: 'Ocorreu um erro ao excluir o administrador.' });
+    }
+  }
+
+  async getProfile(req: AuthenticatedRequest, res: Response) {
+    try {
+      const adminId = req.adminId;
+      if (!adminId) {
+        return res.status(401).json({ error: 'Não autorizado.' });
+      }
+
+      const admin = await prisma.admin.findUnique({
+        where: { id: adminId },
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          createdAt: true,
+          updatedAt: true,
+        },
+      });
+
+      if (!admin) {
+        return res.status(404).json({ error: 'Administrador não encontrado.' });
+      }
+
+      return res.json(admin);
+    } catch {
+      return res.status(500).json({ error: 'Ocorreu um erro ao buscar o perfil do administrador.' });
+    }
+  }
+
+  async changePassword(req: AuthenticatedRequest, res: Response) {
+    try {
+      const adminId = req.adminId;
+      console.log('Admin ID:', adminId);  
+      if (!adminId) {
+        return res.status(401).json({ error: 'Não autorizado.' });
+      }
+
+      const { currentPassword, newPassword } = changePasswordSchema.parse(req.body);
+
+      const admin = await prisma.admin.findUnique({ 
+        where: { id: adminId } 
+      });
+
+      if (!admin?.password) {
+        return res.status(404).json({ error: 'Administrador não encontrado.' });
+      }
+
+      const isCurrentPasswordValid = await bcrypt.compare(currentPassword, admin.password);
+      if (!isCurrentPasswordValid) {
+        return res.status(401).json({ error: 'Senha atual incorreta.' });
+      }
+
+      if (currentPassword === newPassword) {
+        return res.status(400).json({ error: 'A nova senha deve ser diferente da senha atual.' });
+      }
+
+      const hashedPassword = await bcrypt.hash(newPassword, 10);
+      await prisma.admin.update({
+        where: { id: adminId },
+        data: { password: hashedPassword },
+      });
+
+      return res.status(200).json({ message: 'Senha alterada com sucesso!' });
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ issues: error.issues });
+      }
+      return res.status(500).json({ error: 'Ocorreu um erro ao alterar a senha.' });
+    }
+  }
+
+  async refreshToken(req: Request, res: Response) {
+    try {
+      const jwtSecret = process.env.JWT_SECRET;
+      if (!jwtSecret) {
+        return res.status(500).json({ error: 'Erro interno do servidor.' });
+      }
+
+      const { refreshToken } = refreshTokenSchema.parse(req.body);
+
+      try {
+        const decoded = jwt.verify(refreshToken, jwtSecret) as { id: string };
+        
+        const admin = await prisma.admin.findUnique({
+          where: { id: decoded.id },
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          },
+        });
+
+        if (!admin) {
+          return res.status(401).json({ error: 'Refresh token inválido.' });
+        }
+
+        const newAccessToken = jwt.sign({ id: admin.id }, jwtSecret, { expiresIn: '1h' });
+        const newRefreshToken = jwt.sign({ id: admin.id }, jwtSecret, { expiresIn: '7d' });
+
+        return res.json({
+          admin,
+          accessToken: newAccessToken,
+          refreshToken: newRefreshToken,
+        });
+      } catch {
+        return res.status(401).json({ error: 'Refresh token inválido ou expirado.' });
+      }
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ issues: error.issues });
+      }
+      return res.status(500).json({ error: 'Ocorreu um erro ao renovar o token.' });
     }
   }
 }
