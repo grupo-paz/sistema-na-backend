@@ -11,6 +11,10 @@ interface AuthenticatedRequest extends Request {
   adminId?: string;
 }
 
+const passwordValidation = new RegExp(
+  /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_\-+={}[\]|;:'",.<>?/`~]).{8,}$/
+);
+
 const loginSchema = z.object({
   email: z.string().email({ message: 'E-mail inválido.' }),
   password: z.string().min(1, { message: 'A senha é obrigatória.' }),
@@ -22,12 +26,20 @@ const refreshTokenSchema = z.object({
 
 const definePasswordSchema = z.object({
   token: z.string().min(1, { message: 'O token é obrigatório.' }),
-  password: z.string().min(6, { message: 'A senha deve ter no mínimo 6 caracteres.' }),
+  password: z.string()
+             .min(8, { message: 'A senha deve ter no mínimo 8 caracteres.' })
+             .regex(passwordValidation, {
+                message: 'A senha deve conter pelo menos uma letra maiúscula, uma minúscula, um número e um símbolo especial.'
+             }),
 });
 
 const changePasswordSchema = z.object({
   currentPassword: z.string().min(1, { message: 'A senha atual é obrigatória.' }),
-  newPassword: z.string().min(6, { message: 'A nova senha deve ter no mínimo 6 caracteres.' }),
+  newPassword: z.string()
+               .min(8, { message: 'A nova senha deve ter no mínimo 8 caracteres.' })
+               .regex(passwordValidation, {
+                  message: 'A nova senha deve conter pelo menos uma letra maiúscula, uma minúscula, um número e um símbolo especial.'
+               }),
 });
 
 const updateAdminSchema = z.object({
@@ -35,8 +47,13 @@ const updateAdminSchema = z.object({
   email: z.string().email('O formato do e-mail é inválido.').optional(),
 });
 
+const forgotPasswordSchema = z.object({
+    email: z.string().email({ message: 'E-mail inválido.' }),
+});
+
 
 class AdminController {
+
   async create(req: Request, res: Response) {
     try {
       const { name, email } = req.body;
@@ -126,12 +143,12 @@ class AdminController {
       });
 
       if (!admin) {
-        return res.status(400).json({ error: 'Token de ativação inválido.' });
+        return res.status(400).json({ error: 'Token de ativação/recuperação inválido.' });
       }
 
       const now = new Date();
       if (admin.passwordResetExpires && now > admin.passwordResetExpires) {
-        return res.status(400).json({ error: 'Token de ativação expirou.' });
+        return res.status(400).json({ error: 'Token de ativação/recuperação expirou.' });
       }
 
       const hashedPassword = await bcrypt.hash(password, 10);
@@ -166,7 +183,8 @@ class AdminController {
         orderBy: { createdAt: 'desc' },
       });
       return res.json(admins);
-    } catch {
+    } catch (error){
+      console.error(error);
       return res.status(500).json({ error: 'Ocorreu um erro ao listar os administradores.' });
     }
   }
@@ -193,12 +211,14 @@ class AdminController {
         data: dataToUpdate,
       });
 
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { password, ...adminWithoutPassword } = updatedAdmin;
       return res.json(adminWithoutPassword);
     } catch (error) {
       if (error instanceof z.ZodError) {
         return res.status(400).json({ issues: error.issues });
       }
+      console.error(error);
       return res.status(500).json({ error: 'Ocorreu um erro ao atualizar o administrador.' });
     }
   }
@@ -216,10 +236,11 @@ class AdminController {
       if (!adminToDelete) {
         return res.status(404).json({ error: 'Administrador não encontrado.' });
       }
-      
+
       await prisma.admin.delete({ where: { id } });
       return res.status(200).json({ message: 'Administrador excluído com sucesso.' });
-    } catch {
+    } catch (error){
+      console.error(error);
       return res.status(500).json({ error: 'Ocorreu um erro ao excluir o administrador.' });
     }
   }
@@ -247,7 +268,8 @@ class AdminController {
       }
 
       return res.json(admin);
-    } catch {
+    } catch (error){
+      console.error(error);
       return res.status(500).json({ error: 'Ocorreu um erro ao buscar o perfil do administrador.' });
     }
   }
@@ -255,15 +277,14 @@ class AdminController {
   async changePassword(req: AuthenticatedRequest, res: Response) {
     try {
       const adminId = req.adminId;
-      console.log('Admin ID:', adminId);  
       if (!adminId) {
         return res.status(401).json({ error: 'Não autorizado.' });
       }
 
       const { currentPassword, newPassword } = changePasswordSchema.parse(req.body);
 
-      const admin = await prisma.admin.findUnique({ 
-        where: { id: adminId } 
+      const admin = await prisma.admin.findUnique({
+        where: { id: adminId }
       });
 
       if (!admin?.password) {
@@ -290,6 +311,7 @@ class AdminController {
       if (error instanceof z.ZodError) {
         return res.status(400).json({ issues: error.issues });
       }
+      console.error(error);
       return res.status(500).json({ error: 'Ocorreu um erro ao alterar a senha.' });
     }
   }
@@ -305,7 +327,7 @@ class AdminController {
 
       try {
         const decoded = jwt.verify(refreshToken, jwtSecret) as { id: string };
-        
+
         const admin = await prisma.admin.findUnique({
           where: { id: decoded.id },
           select: {
@@ -327,14 +349,58 @@ class AdminController {
           accessToken: newAccessToken,
           refreshToken: newRefreshToken,
         });
-      } catch {
+      } catch (jwtError) {
+        console.error("Erro ao verificar refresh token:", jwtError);
         return res.status(401).json({ error: 'Refresh token inválido ou expirado.' });
       }
     } catch (error) {
       if (error instanceof z.ZodError) {
         return res.status(400).json({ issues: error.issues });
       }
+      console.error("Erro em refreshToken:", error);
       return res.status(500).json({ error: 'Ocorreu um erro ao renovar o token.' });
+    }
+  }
+
+  async forgotPassword(req: Request, res: Response) {
+    try {
+      const { email } = forgotPasswordSchema.parse(req.body);
+      const admin = await prisma.admin.findUnique({ where: { email } });
+
+      if (!admin) {
+        return res.status(200).json({ message: 'Se um utilizador com este e-mail existir, um link de recuperação foi enviado.' });
+      }
+
+      const resetToken = crypto.randomBytes(20).toString('hex');
+      const now = new Date();
+      now.setHours(now.getHours() + 1);
+      const tokenExpires = now;
+
+      await prisma.admin.update({
+        where: { email },
+        data: {
+          passwordResetToken: resetToken,
+          passwordResetExpires: tokenExpires,
+        },
+      });
+
+      const resetLink = `${process.env.FRONTEND_URL}/define-password?token=${resetToken}`;
+
+      await transporter.sendMail({
+        from: '"Equipe NA" <noreply@na-sistema.com>',
+        to: admin.email,
+        subject: 'Recuperação de Senha - Sistema NA',
+        html: `<p>Olá, ${admin.name}!</p><p>Clique no link para redefinir sua senha: <a href="${resetLink}">${resetLink}</a></p>`,
+      });
+
+      return res.status(200).json({ message: 'Se um utilizador com este e-mail existir, um link de recuperação foi enviado.' });
+
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(200).json({ message: 'Se um utilizador com este e-mail existir, um link de recuperação foi enviado.' });
+      }
+      console.error("Erro em forgotPassword:", error);
+      return res.status(500).json({ error: 'Ocorreu um erro ao processar o pedido de recuperação de senha.' });
     }
   }
 }
