@@ -21,4 +21,18 @@ model Admin {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  
+  secretariatRecords SecretariatRecord[]
+}
+
+model SecretariatRecord {
+  id          String   @id @default(uuid())
+  cashValue   Float    // Valor em dinheiro
+  pixValue    Float    // Valor em Pix
+  createdAt   DateTime @default(now()) // Data da atualização
+
+  author      Admin    @relation(fields: [authorId], references: [id])
+  authorId    String
+
+  @@map("secretariat_records")
 }
