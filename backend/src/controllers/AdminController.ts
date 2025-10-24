@@ -11,6 +11,10 @@ interface AuthenticatedRequest extends Request {
   adminId?: string;
 }
 
+const passwordValidation = new RegExp(
+  /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_\-+={}[\]|;:'",.<>?/`~]).{8,}$/
+);
+
 const loginSchema = z.object({
   email: z.string().email({ message: 'E-mail inválido.' }),
   password: z.string().min(1, { message: 'A senha é obrigatória.' }),
@@ -22,12 +26,20 @@ const refreshTokenSchema = z.object({
 
 const definePasswordSchema = z.object({
   token: z.string().min(1, { message: 'O token é obrigatório.' }),
-  password: z.string().min(6, { message: 'A senha deve ter no mínimo 6 caracteres.' }),
+  password: z.string()
+             .min(8, { message: 'A senha deve ter no mínimo 8 caracteres.' })
+             .regex(passwordValidation, {
+                message: 'A senha deve conter pelo menos uma letra maiúscula, uma minúscula, um número e um símbolo especial.'
+             }),
 });
 
 const changePasswordSchema = z.object({
   currentPassword: z.string().min(1, { message: 'A senha atual é obrigatória.' }),
-  newPassword: z.string().min(6, { message: 'A nova senha deve ter no mínimo 6 caracteres.' }),
+  newPassword: z.string()
+               .min(8, { message: 'A nova senha deve ter no mínimo 8 caracteres.' })
+               .regex(passwordValidation, {
+                  message: 'A nova senha deve conter pelo menos uma letra maiúscula, uma minúscula, um número e um símbolo especial.'
+               }),
 });
 
 const updateAdminSchema = z.object({
@@ -41,6 +53,7 @@ const forgotPasswordSchema = z.object({
 
 
 class AdminController {
+
   async create(req: Request, res: Response) {
     try {
       const { name, email } = req.body;
@@ -360,7 +373,7 @@ class AdminController {
 
       const resetToken = crypto.randomBytes(20).toString('hex');
       const now = new Date();
-      now.setHours(now.getHours() + 1); 
+      now.setHours(now.getHours() + 1);
       const tokenExpires = now;
 
       await prisma.admin.update({
