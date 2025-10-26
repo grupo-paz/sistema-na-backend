@@ -1,6 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -15,24 +12,43 @@ model Admin {
   name      String
   email     String   @unique
   password  String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   passwordResetToken   String?   @unique
   passwordResetExpires DateTime?
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  
   secretariatRecords SecretariatRecord[]
+
+  events             Event[]
 }
 
 model SecretariatRecord {
   id          String   @id @default(uuid())
-  cashValue   Float    // Valor em dinheiro
-  pixValue    Float    // Valor em Pix
-  createdAt   DateTime @default(now()) // Data da atualização
-
+  cashValue   Float
+  pixValue    Float
+  createdAt   DateTime @default(now())
+  
   author      Admin    @relation(fields: [authorId], references: [id])
   authorId    String
 
   @@map("secretariat_records")
+}
+
+model Event {
+  id          String   @id @default(uuid())
+  title       String
+  description String
+  dateTime    DateTime
+  location    String
+  type        String
+  category    String
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  author      Admin    @relation(fields: [authorId], references: [id])
+  authorId    String
+
+  @@map("events")
 }
