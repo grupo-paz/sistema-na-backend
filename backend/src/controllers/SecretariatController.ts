@@ -28,6 +28,14 @@ class SecretariatController {
           pixValue,
           authorId: adminId,
         },
+        include: {
+          author: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+        },
       });
 
       return res.status(201).json(newRecord);
@@ -61,7 +69,10 @@ class SecretariatController {
           cashValue: 0,
           pixValue: 0,
           createdAt: null,
-          author: { name: 'N/A' },
+          author: {
+            id: '',
+            name: 'N/A',
+          },
         });
       }
 
