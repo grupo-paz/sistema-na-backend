@@ -77,7 +77,6 @@ Guia para configurar e rodar o ambiente de desenvolvimento do backend.
         JWT_SECRET="um-segredo-qualquer-bem-longo"
         API_KEY="chave-secreta-da-api-12345"
 
-        # E-mail do administrador principal que não pode ser alterado ou excluído
         SUPER_ADMIN_EMAIL="admin@admin.com"
         ```
 
