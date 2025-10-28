@@ -17,7 +17,7 @@ async function main() {
 
   console.log('Nenhum administrador encontrado. Criando o primeiro...');
 
-  const hashedPassword = await bcrypt.hash('admin123', 10);
+  const hashedPassword = await bcrypt.hash('Admin_123', 10);
 
   await prisma.admin.create({
     data: {
