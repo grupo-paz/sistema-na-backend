@@ -76,6 +76,8 @@ Guia para configurar e rodar o ambiente de desenvolvimento do backend.
 
         JWT_SECRET="um-segredo-qualquer-bem-longo"
         API_KEY="chave-secreta-da-api-12345"
+
+        SUPER_ADMIN_EMAIL="admin@admin.com"
         ```
 
 4.  **Prepare o Banco de Dados com o Prisma:**
