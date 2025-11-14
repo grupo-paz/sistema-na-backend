@@ -76,6 +76,8 @@ Guia para configurar e rodar o ambiente de desenvolvimento do backend.
 
         JWT_SECRET="um-segredo-qualquer-bem-longo"
         API_KEY="chave-secreta-da-api-12345"
+
+        SUPER_ADMIN_EMAIL="admin@admin.com"
         ```
 
 4.  **Prepare o Banco de Dados com o Prisma:**
@@ -84,7 +86,7 @@ Guia para configurar e rodar o ambiente de desenvolvimento do backend.
     # Aplica as migrações (cria as tabelas)
     npx prisma migrate dev
 
-    # Popula o banco com o primeiro admin (admin@admin.com / admin123)
+    # Popula o banco com o primeiro admin (admin@admin.com / Admin@2025!)
     npx prisma db seed
     ```
 

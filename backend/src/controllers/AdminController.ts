@@ -172,7 +172,14 @@ class AdminController {
 
   async list(req: Request, res: Response) {
     try {
+      const superAdminEmail = process.env.SUPER_ADMIN_EMAIL;
+
       const admins = await prisma.admin.findMany({
+        where: {
+          email: {
+            not: superAdminEmail
+          }
+        },
         select: {
           id: true,
           name: true,
@@ -193,6 +200,12 @@ class AdminController {
     try {
       const { id } = req.params;
       const dataToUpdate = updateAdminSchema.parse(req.body);
+      const superAdminEmail = process.env.SUPER_ADMIN_EMAIL;
+
+      const adminToUpdate = await prisma.admin.findUnique({ where: { id } });
+      if (adminToUpdate?.email === superAdminEmail) {
+        return res.status(403).json({ error: 'Não é permitido editar o super administrador.' });
+      }
 
       if (dataToUpdate.email) {
         const emailExists = await prisma.admin.findFirst({
@@ -227,6 +240,7 @@ class AdminController {
     try {
       const { id } = req.params;
       const loggedAdminId = req.adminId;
+      const superAdminEmail = process.env.SUPER_ADMIN_EMAIL;
 
       if (id === loggedAdminId) {
         return res.status(400).json({ error: 'Você não pode excluir a sua própria conta.' });
@@ -237,6 +251,10 @@ class AdminController {
         return res.status(404).json({ error: 'Administrador não encontrado.' });
       }
 
+      if (adminToDelete.email === superAdminEmail) {
+        return res.status(403).json({ error: 'O super administrador não pode ser excluído.' });
+      }
+      
       await prisma.admin.delete({ where: { id } });
       return res.status(200).json({ message: 'Administrador excluído com sucesso.' });
     } catch (error){
@@ -277,6 +295,7 @@ class AdminController {
   async changePassword(req: AuthenticatedRequest, res: Response) {
     try {
       const adminId = req.adminId;
+      
       if (!adminId) {
         return res.status(401).json({ error: 'Não autorizado.' });
       }
