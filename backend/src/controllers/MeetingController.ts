@@ -1,4 +1,4 @@
-    import { Request, Response } from 'express';
+import { Request, Response } from 'express';
 import { PrismaClient } from '@prisma/client';
 import { z } from 'zod';
 
@@ -17,9 +17,17 @@ const meetingSchema = z.object({
 });
 
 const updateMeetingSchema = meetingSchema.partial();
+const daysOfWeekMap: { [key: number]: string } = {
+  0: "Domingo",
+  1: "Segunda-feira",
+  2: "Terça-feira",
+  3: "Quarta-feira",
+  4: "Quinta-feira",
+  5: "Sexta-feira",
+  6: "Sábado"
+};
 
 class MeetingController {
- 
   async create(req: AuthenticatedRequest, res: Response) {
     try {
       const data = meetingSchema.parse(req.body);
@@ -46,7 +54,6 @@ class MeetingController {
       return res.status(500).json({ error: 'Ocorreu um erro ao criar a reunião.' });
     }
   }
-
 
   async list(req: Request, res: Response) {
     try {
@@ -98,7 +105,6 @@ class MeetingController {
       return res.status(500).json({ error: 'Ocorreu um erro ao atualizar a reunião.' });
     }
   }
-
   async delete(req: AuthenticatedRequest, res: Response) {
     try {
       const { id } = req.params;
@@ -114,6 +120,30 @@ class MeetingController {
     } catch (error) {
       console.error(error);
       return res.status(500).json({ error: 'Ocorreu um erro ao excluir la reunião.' });
+    }
+  }
+  async getTodayMeetings(req: Request, res: Response) {
+    try {
+      const todayIndex = new Date().getDay();
+      const todayName = daysOfWeekMap[todayIndex];
+
+      if (!todayName) {
+        return res.status(500).json({ error: 'Não foi possível determinar o dia da semana.' });
+      }
+
+      const meetings = await prisma.meeting.findMany({
+        where: {
+          dayOfWeek: todayName,
+        },
+        orderBy: {
+          time: 'asc',
+        },
+      });
+      return res.json(meetings);
+
+    } catch (error) {
+      console.error(error);
+      return res.status(500).json({ error: 'Ocorreu um erro ao buscar as reuniões do dia.' });
     }
   }
 }
