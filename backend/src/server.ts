@@ -12,13 +12,13 @@ const corsOptions = {
   allowedHeaders: "Content-Type, Authorization, x-api-key"
 };
 
-
 const app = express();
+app.options('*', cors(corsOptions));
 
-app.use(cors(corsOptions)); 
-app.use(express.json());   
-app.use(apiKeyMiddleware); 
+app.use(cors(corsOptions));
+app.use(express.json());
+app.use(apiKeyMiddleware);
 
-app.use(router); 
+app.use(router);
 
 export default app;

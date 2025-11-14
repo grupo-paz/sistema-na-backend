@@ -5,6 +5,10 @@ export default function apiKeyMiddleware(
   res: Response,
   next: NextFunction,
 ) {
+  if (req.method === 'OPTIONS') {
+    return next();
+  }
+  
   const apiKey = req.headers['x-api-key'];
   const expectedApiKey = process.env.API_KEY;
 
