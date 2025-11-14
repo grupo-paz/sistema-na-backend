@@ -19,9 +19,7 @@ model Admin {
   passwordResetExpires DateTime?
 
   secretariatRecords SecretariatRecord[]
-
   events             Event[]
-
   meetings           Meeting[]
 }
 
@@ -30,8 +28,8 @@ model SecretariatRecord {
   cashValue   Float
   pixValue    Float
   createdAt   DateTime @default(now())
-  
-  author      Admin    @relation(fields: [authorId], references: [id])
+
+  author      Admin    @relation(fields: [authorId], references: [id], onDelete: Cascade)
   authorId    String
 
   @@map("secretariat_records")
@@ -49,7 +47,7 @@ model Event {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  author      Admin    @relation(fields: [authorId], references: [id])
+  author      Admin    @relation(fields: [authorId], references: [id], onDelete: Cascade)
   authorId    String
 
   @@map("events")
@@ -66,7 +64,7 @@ model Meeting {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  author      Admin    @relation(fields: [authorId], references: [id])
+  author      Admin    @relation(fields: [authorId], references: [id], onDelete: Cascade)
   authorId    String
 
   @@map("meetings")

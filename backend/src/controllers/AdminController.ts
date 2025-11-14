@@ -10,7 +10,6 @@ const prisma = new PrismaClient();
 interface AuthenticatedRequest extends Request {
   adminId?: string;
 }
-
 const passwordValidation = new RegExp(
   /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_\-+={}[\]|;:'",.<>?/`~]).{8,}$/
 );
@@ -57,7 +56,6 @@ class AdminController {
   async create(req: Request, res: Response) {
     try {
       const { name, email } = req.body;
-
       const existingAdmin = await prisma.admin.findUnique({ where: { email } });
       if (existingAdmin) {
         return res.status(400).json({ error: 'Este e-mail já está em uso.' });
@@ -67,7 +65,6 @@ class AdminController {
       const now = new Date();
       now.setHours(now.getHours() + 1);
       const tokenExpires = now;
-
       await prisma.admin.create({
         data: {
           name,
@@ -76,11 +73,10 @@ class AdminController {
           passwordResetExpires: tokenExpires,
         },
       });
-
       const activationLink = `${process.env.FRONTEND_URL}/define-password?token=${activationToken}`;
 
       await transporter.sendMail({
-        from: '"Equipe NA" <noreply@na-sistema.com>',
+        from: `"Equipe NA" <${process.env.EMAIL_USER}>`, // Usa o e-mail do .env
         to: email,
         subject: 'Ative sua conta no Sistema NA',
         html: `<p>Olá, ${name}!</p><p>Clique no link para definir sua senha: <a href="${activationLink}">${activationLink}</a></p>`,
@@ -385,16 +381,17 @@ class AdminController {
     try {
       const { email } = forgotPasswordSchema.parse(req.body);
       const admin = await prisma.admin.findUnique({ where: { email } });
+      const successMessage = 'Se um utilizador com este e-mail existir, um link de recuperação foi enviado.';
 
-      if (!admin) {
-        return res.status(200).json({ message: 'Se um utilizador com este e-mail existir, um link de recuperação foi enviado.' });
+      if (!admin || !admin.password) {
+        return res.status(200).json({ message: successMessage });
       }
-
+      
       const resetToken = crypto.randomBytes(20).toString('hex');
       const now = new Date();
       now.setHours(now.getHours() + 1);
       const tokenExpires = now;
-
+      
       await prisma.admin.update({
         where: { email },
         data: {
@@ -402,17 +399,17 @@ class AdminController {
           passwordResetExpires: tokenExpires,
         },
       });
-
+      
       const resetLink = `${process.env.FRONTEND_URL}/define-password?token=${resetToken}`;
 
       await transporter.sendMail({
-        from: '"Equipe NA" <noreply@na-sistema.com>',
+        from: `"Equipe NA" <${process.env.EMAIL_USER}>`,
         to: admin.email,
         subject: 'Recuperação de Senha - Sistema NA',
         html: `<p>Olá, ${admin.name}!</p><p>Clique no link para redefinir sua senha: <a href="${resetLink}">${resetLink}</a></p>`,
       });
 
-      return res.status(200).json({ message: 'Se um utilizador com este e-mail existir, um link de recuperação foi enviado.' });
+      return res.status(200).json({ message: successMessage });
 
     } catch (error) {
       if (error instanceof z.ZodError) {

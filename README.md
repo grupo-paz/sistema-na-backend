@@ -69,15 +69,15 @@ Guia para configurar e rodar o ambiente de desenvolvimento do backend.
         DATABASE_URL="postgresql://usuario_projeto:senha_projeto@localhost:5432/na_api"
         FRONTEND_URL="http://localhost:5173"
         
-        EMAIL_HOST="sandbox.smtp.mailtrap.io"
-        EMAIL_PORT=2525
-        EMAIL_USER="SEU_USUARIO_MAILTRAP"
-        EMAIL_PASS="SUA_SENHA_MAILTRAP"
+        EMAIL_HOST="smtp.gmail.com"
+        EMAIL_PORT=465
+        EMAIL_USER="equipe.narcoticos.sa@gmail.com"
+        EMAIL_PASS="eagi lqkj zukn gutv"
 
         JWT_SECRET="um-segredo-qualquer-bem-longo"
         API_KEY="chave-secreta-da-api-12345"
 
-        SUPER_ADMIN_EMAIL="admin@admin.com"
+        SUPER_ADMIN_EMAIL="equipe.narcoticos.sa@gmail.com"
         ```
 
 4.  **Prepare o Banco de Dados com o Prisma:**

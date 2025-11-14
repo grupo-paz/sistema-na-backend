@@ -1,36 +1,44 @@
 import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcrypt';
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 const prisma = new PrismaClient();
 
 async function main() {
   console.log('Iniciando o processo de seed...');
 
-  const firstAdmin = await prisma.admin.findFirst();
+  const adminEmail = process.env.SUPER_ADMIN_EMAIL;
+  const defaultPassword = process.env.SUPER_ADMIN_PASSWORD;
 
-  if (firstAdmin) {
-    console.log(
-      'O banco de dados já possui um administrador. Seed não executado.',
-    );
-    return;
+  if (!adminEmail || !defaultPassword) {
+    console.error("Erro: As variáveis de ambiente SUPER_ADMIN_EMAIL e SUPER_ADMIN_PASSWORD devem estar definidas no .env");
+    process.exit(1);
   }
 
+  const firstAdmin = await prisma.admin.findUnique({
+    where: { email: adminEmail }
+  });
+
+  if (firstAdmin) {
+    console.log(`O administrador ${adminEmail} já existe. Seed não executado.`);
+    return;
+  }
   console.log('Nenhum administrador encontrado. Criando o primeiro...');
 
-  const strongPassword = "Admin@2025!" 
-
-  console.log('Criptografando senha padrão forte...');
-  const hashedPassword = await bcrypt.hash(strongPassword, 10);
+  const hashedPassword = await bcrypt.hash(defaultPassword, 10);
 
   await prisma.admin.create({
     data: {
-      name: 'Admin Principal',
-      email: 'admin@admin.com',
+      name: 'Admin Principal (Equipe)',
+      email: adminEmail,
       password: hashedPassword,
     },
   });
 
   console.log('Primeiro administrador criado com sucesso!');
+  console.log(`Login: ${adminEmail}`);
 }
 
 main()
