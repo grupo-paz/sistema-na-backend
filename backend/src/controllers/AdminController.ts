@@ -76,7 +76,7 @@ class AdminController {
       const activationLink = `${process.env.FRONTEND_URL}/define-password?token=${activationToken}`;
 
       await transporter.sendMail({
-        from: `"Equipe NA" <${process.env.EMAIL_USER}>`, // Usa o e-mail do .env
+        from: `"Equipe NA" <${process.env.EMAIL_USER}>`,
         to: email,
         subject: 'Ative sua conta no Sistema NA',
         html: `<p>Olá, ${name}!</p><p>Clique no link para definir sua senha: <a href="${activationLink}">${activationLink}</a></p>`,
