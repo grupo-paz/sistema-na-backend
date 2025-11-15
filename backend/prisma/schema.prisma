@@ -57,6 +57,7 @@ model Meeting {
   id          String   @id @default(uuid())
   dayOfWeek   String
   time        String
+  endTime     String
   type        String
   category    String
   roomOpener  String

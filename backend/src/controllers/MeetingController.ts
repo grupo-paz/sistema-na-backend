@@ -11,6 +11,7 @@ interface AuthenticatedRequest extends Request {
 const meetingSchema = z.object({
   dayOfWeek: z.string().min(1, 'O dia da semana é obrigatório.'),
   time: z.string().regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, 'O formato do horário deve ser HH:MM.'),
+  endTime: z.string().regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, 'O formato do horário de término deve ser HH:MM.'),
   type: z.string().min(1, 'O tipo é obrigatório.'),
   category: z.string().min(1, 'A categoria é obrigatória.'),
   roomOpener: z.string().min(1, 'O abridor de sala é obrigatório.'),
