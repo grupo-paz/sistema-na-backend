@@ -124,7 +124,20 @@ class MeetingController {
   }
   async getTodayMeetings(req: Request, res: Response) {
     try {
-      const todayIndex = new Date().getDay();
+      const targetTimezone = 'America/Sao_Paulo';
+
+      const todayNameInEnglish = new Date().toLocaleString('en-US', { 
+          weekday: 'long', 
+          timeZone: targetTimezone 
+      });
+
+      const daysInEnglish = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+      const todayIndex = daysInEnglish.indexOf(todayNameInEnglish);
+
+      if (todayIndex === -1) {
+          return res.status(500).json({ error: 'Não foi possível determinar o dia da semana na timezone alvo.' });
+      }
+
       const todayName = daysOfWeekMap[todayIndex];
 
       if (!todayName) {
