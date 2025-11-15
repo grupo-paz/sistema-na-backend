@@ -8,7 +8,8 @@ import apiKeyMiddleware from './middlewares/apiKeyMiddleware';
 
 const allowedOrigins = [
   'https://sistema-na-frontend.vercel.app',
-  'https://sistema-na-admin.vercel.app'
+  'https://sistema-na-admin.vercel.app',
+  'http://grupopaz.vercel.app',
 ];
 
 const corsOptions = {
