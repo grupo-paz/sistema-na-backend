@@ -7,14 +7,15 @@ import router from './routes';
 import apiKeyMiddleware from './middlewares/apiKeyMiddleware';
 
 const allowedOrigins = [
-  'https://sistema-na-frontend.vercel.app',
+  process.env.FRONTEND_URL,           
+  'https://grupopaz.vercel.app',
   'https://sistema-na-admin.vercel.app',
-  'http://grupopaz.vercel.app',
+  'http://localhost:5173'                
 ];
 
 const corsOptions = {
   origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
-    if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+    if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
       callback(new Error('Acesso não permitido por CORS'));
@@ -27,11 +28,14 @@ const corsOptions = {
 const app = express();
 const PORT = 3333;
 
+app.options('*', cors(corsOptions));
+
 app.use(cors(corsOptions));
 
 app.use(express.json());
 
 app.use(apiKeyMiddleware);
+
 app.use(router);
 
 app.listen(PORT, () => {
